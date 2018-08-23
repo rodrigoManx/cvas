@@ -1,0 +1,61 @@
+#header {
+	position: fixed;
+	height: 100px;
+	width: 100px;
+	right: 0px;
+	top: 0px;
+ 	z-index: 1;
+}
+
+#header button {
+	margin: 10%;
+	width: 80%;
+	height: 80%;
+}
+
+#content {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	height: 100%;
+	width: 100%;
+	background: brown;
+	z-index: 0;
+}
+
+.exploration {
+	position: relative;
+	display: inline-block;
+	height: 98.5%;
+}
+
+.vis0,.vis1,.vis2,.vis3  {
+	position: relative;
+	display: inline-block;
+}
+
+.vis-close-button {
+	position: absolute;
+	left: 0px;
+	margin: 5px;
+	width: 50px;
+	height: 50px;
+	z-index: 5;
+}
+
+.exploration-menu {
+	background: grey;
+	position: absolute;
+	height: 50vh;
+	margin-top: -25vh;
+	top: 50%;
+	left: 50%;
+	display: block;
+}
+
+.menu-content {
+	position: absolute;
+	margin: 5vh 10% 5vh 10%;
+	height: 80%;
+	width: 80%;
+}
