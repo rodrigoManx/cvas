@@ -1,3 +1,23 @@
+scale = 1000/64;
+cubeGeometry = new THREE.BoxBufferGeometry( scale*0.8, scale, scale*0.8 );
+cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff80, overdraw: 0.5 } );
+
+class GridBar {
+	constructor(kernel_map_voxel, position) {
+		this.bar = new THREE.Mesh( cubeGeometry, 
+								   cubeMaterial );
+		this.bar.position.copy( new THREE.Vector3( 
+								(position.x * scale) + (scale / 2), 
+								scale / 2, 
+								(position.z * scale) + (scale / 2)) );
+	}
+
+	fix() {
+
+	}
+}
+
+
 class Grid {
 	constructor(element) {
 		this.vis = element;
@@ -19,10 +39,11 @@ class Grid {
 		this.objs = [];
 		this.cubeGeometry = new THREE.BoxBufferGeometry( this.scale*0.8, this.scale, this.scale*0.8 );
 		this.cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff80, overdraw: 0.5 } );
+		this.bars = [];
 	}
 
 
-	init(height, width) {
+	init(height, width, data) {
 		this.camera = new THREE.PerspectiveCamera( 45, this.vis.innerWidth() / this.vis.innerHeight(), 1, 10000 );
 		this.camera.position.set(this.zoom * Math.sin(this.angleX) * Math.cos(this.angleY),
 								 this.zoom * Math.sin(this.angleY),
@@ -42,52 +63,45 @@ class Grid {
 		this.renderer.setPixelRatio( this.vis.devicePixelRatio );
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
 		
-		for (var i = -width/2; i < width/2 ; ++i){
-			for (var j = -height/2; j < height/2 ; ++j){
-				var voxel = new THREE.Mesh( this.cubeGeometry, this.cubeMaterial );
-				voxel.position.copy( new THREE.Vector3( (i * this.scale) + (this.scale / 2), 0.0 + this.scale / 2, (j * this.scale) + (this.scale / 2)) );
-				this.scene.add( voxel );
-				this.objs.push(voxel);
-			}
-		}
+		this.draw_bars(height, width, data);
+
+		//kmvi -> kernel map voxel index
+		
 		this.render();
 		this.vis.append( this.renderer.domElement );
 	}
 
-	update_vis(height, width) {
+
+	draw_y_axis() {
+
+	}
+
+	draw_bars(height, width, data) {
+		for (var i = -width/2, kmvi = 0; i < width/2 ; ++i){
+			for (var j = -height/2; j < height/2 ; ++j, ++kmvi){
+				this.bars.push(new GridBar(data[kmvi], {'x': i, 'z': j}));
+				this.scene.add(this.bars[this.bars.length - 1].bar);
+			}
+		}
+	}
+
+
+	update_vis(height, width, data) {
 		this.camera.aspect = this.vis.innerWidth() / this.vis.innerHeight();
 		this.camera.updateProjectionMatrix();
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
-		for (var i = 0; i < this.objs.length; ++i) {
-			this.scene.remove(this.objs[i]);
-			this.objs[i].material.dispose();
-			this.objs[i].geometry.dispose();
-			this.objs[i] = undefined;
+		for (var i = 0; i < this.bars.length; ++i) {
+			this.scene.remove(this.bars[i].bar);
+			this.bars[i].bar.material.dispose();
+			this.bars[i].bar.geometry.dispose();
+			this.bars[i] = undefined;
 		}
-		this.objs = [];
-		for (var i = -width/2; i < width/2 ; ++i){
-			for (var j = -height/2; j < height/2 ; ++j){
-				var voxel = new THREE.Mesh( this.cubeGeometry, this.cubeMaterial );
-				voxel.position.copy( new THREE.Vector3( (i * this.scale) + (this.scale / 2), 0.0 + this.scale / 2, (j * this.scale) + (this.scale / 2)) );
-				this.scene.add( voxel );
-				this.objs.push(voxel);
-			}
-		}
+		this.bars = [];
+		this.draw_bars(height, width, data);
 		this.render();
 		this.vis.append( this.renderer.domElement );	
 	}
 
-
-	free_memory() {
-		for (var i = 0; i < this.objs.length; ++i){
-			delete(this.objs[i]);
-		}
-		this.objs = [];
-		this.camera = null;
-		this.scene = null;
-		this.renderer = null;
-
-	}
 
 	rotate_vis(px, py) {	
 		if (!this.mouseClicked)

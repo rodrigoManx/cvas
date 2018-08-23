@@ -1,5 +1,26 @@
 var GRID_SIDE_SIZE = 64
 
+var shift_pressed = false;
+var kernel_layer_hidden = undefined; 
+
+
+document.onkeydown = function(event) {
+	switch( event.keyCode ) {
+		case 16: 
+			shift_pressed = true; 
+			break;
+	}
+}
+
+document.onkeyup = function(event) {
+	switch( event.keyCode ) {
+		case 16:
+			shift_pressed = false;
+			kernel_layer_hidden.show();
+			break;
+	}
+}
+
 class Kernelmap {
 	constructor(element) {
 		this.vis = element;
@@ -13,6 +34,17 @@ class Kernelmap {
 	}
 
 	init() {
+
+		this.gridLayer.mouseover(function() {
+			if (kernel_layer_hidden != undefined){
+				kernel_layer_hidden.show();
+			}
+
+			if (shift_pressed) {
+				kernel_layer_hidden = $(this);
+				kernel_layer_hidden.hide();
+			}
+		})
 
 		var height = this.vis.innerHeight(),
 			width = this.vis.innerWidth();

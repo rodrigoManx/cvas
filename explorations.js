@@ -36,7 +36,7 @@ class Exploration {
 
 	init_large_exploration() {
 		this.vis1_obj.init();
-		this.vis0_obj.init(this.vis1_obj.height, this.vis1_obj.width);
+		this.vis0_obj.init(this.vis1_obj.height, this.vis1_obj.width, []);
 		this.vis0.bind( 'mousemove', onDocumentMouseMove);
 		this.vis0.bind( 'mousedown', onDocumentMouseDown);
 		this.vis0.bind( 'mouseup', onDocumentMouseUp);
@@ -51,8 +51,8 @@ function onWindowResize() {
 	for (var i = 0; i < explorations.length; ++i){
 		try {
 			explorations[i].vis0_obj.camera.aspect = explorations[i].vis0.innerWidth() / explorations[i].vis0.innerHeight();
-			explorations[i].vis0_obj.camera.updateProjectionMatrix();
 			explorations[i].vis0_obj.renderer.setSize( explorations[i].vis0.innerWidth(), explorations[i].vis0.innerHeight() );
+			explorations[i].vis0_obj.camera.updateProjectionMatrix();
 		}
 		catch(err) {
 		}
@@ -74,7 +74,7 @@ function onNewExploration() {
 		try {
 			if (explorations[i].type != 0){
 				explorations[i].vis1_obj.init();
-				explorations[i].vis0_obj.update_vis(explorations[i].vis1_obj.height, explorations[i].vis1_obj.width);
+				explorations[i].vis0_obj.update_vis(explorations[i].vis1_obj.height, explorations[i].vis1_obj.width, []);
 			}
 		}
 		catch(err) {
