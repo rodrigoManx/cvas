@@ -25,7 +25,7 @@ class Kernelmap {
 	constructor(element) {
 		this.vis = element;
 		this.map = null;
-		this.mapLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '3'});
+		this.mapLayer = $('<div/>').css({'position': 'absolute'});
 		this.gridLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'});
 		this.vis.append(this.mapLayer);
 		this.vis.append(this.gridLayer);
@@ -47,7 +47,20 @@ class Kernelmap {
 		})
 
 		var height = this.vis.innerHeight(),
-			width = this.vis.innerWidth();
+			width = this.vis.innerWidth(),
+			small_side, big_side;
+
+
+		if (height < width){
+			small_side = height;
+			big_side = width;
+		}
+		else {
+			small_side = width;
+			big_side = height;
+		}
+		this.mapLayer.css({'height': small_side.toString(), 'width': small_side.toString()});	
+
 
 		this.map = new google.maps.Map(this.mapLayer.get(0), {
 			zoom: 12,
@@ -55,26 +68,18 @@ class Kernelmap {
 			mapTypeId: 'roadmap'
 		});
 
-		
-		var side = height > width? height : width;
-		var smallside = height < width? height : width;
-
-		//square side size
-		var sss = side / GRID_SIDE_SIZE;
+		var sss = small_side / GRID_SIDE_SIZE;
 
 		var data = new Array();
 
-		this.height = Math.ceil(height / sss);
-		this.width = Math.ceil(width / sss);
+		this.height = this.width = Math.ceil(small_side / sss);
 
-		for (var xpos = 0, row = 0; xpos < width; xpos+=sss, row++) {
+		for (var xpos = 0, row = 0; xpos < small_side; xpos+=sss, row++) {
 			data.push(new Array());
-			for (var ypos = 0; ypos < height; ypos+=sss) {
+			for (var ypos = 0; ypos < small_side; ypos+=sss) {
 				data[row].push({
 					x: xpos,
 					y: ypos,
-					width: sss,
-					height: sss,
 				})
 			}
 		}
@@ -85,8 +90,8 @@ class Kernelmap {
 
 		var grid = d3.select(this.gridLayer.get(0))
 			.append("svg")
-			.attr("width", width)
-			.attr("height", height);
+			.attr("width", small_side)
+			.attr("height", small_side);
 			
 		var row = grid.selectAll(".row")
 			.data(data)
@@ -99,8 +104,8 @@ class Kernelmap {
 			.attr("class","square")
 			.attr("x", function(d) { return d.x; })
 			.attr("y", function(d) { return d.y; })
-			.attr("width", function(d) { return d.width; })
-			.attr("height", function(d) { return d.height; })
+			.attr("width", sss.toString())
+			.attr("height", sss.toString())
 			.style("fill", "red")
 			.style("fill-opacity", "0.4")
 			.style("stroke", "white");

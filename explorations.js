@@ -1,9 +1,11 @@
 var exploration_type = {'default': 0, 'large': 1, 'especific': 2}
+var exploration_level = {'year': 5, 'month': 12, 'day': 31}
 
 window.addEventListener( 'resize', onWindowResize, false );
 
 class Exploration {
 	constructor(exploration) {
+		this.exploration_level = exploration_level.year;
 		this.type = exploration_type.default;
 		this.vis0 = exploration.find('.vis1');
 		this.vis1 = exploration.find('.vis0');
@@ -12,7 +14,7 @@ class Exploration {
 		this.camera = null;
 		this.scene = null;
 		this.renderer = null;
-		this.vis0_obj = new Grid(this.vis0);
+		this.vis0_obj = new Grid(this.vis0, this);
 		this.vis1_obj = new Kernelmap(this.vis1);
 	}
 

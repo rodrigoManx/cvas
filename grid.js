@@ -1,6 +1,11 @@
-scale = 1000/64;
+look_at = new THREE.Vector3(0,100,0);
+side = 1000;
+bars_per_side = 64;
+scale = side/bars_per_side;
 cubeGeometry = new THREE.BoxBufferGeometry( scale*0.8, scale, scale*0.8 );
 cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff80, overdraw: 0.5 } );
+sphere_geometry = new THREE.SphereGeometry( 10, 32, 32 );
+y_axis_height = 300;
 
 class GridBar {
 	constructor(kernel_map_voxel, position) {
@@ -19,10 +24,9 @@ class GridBar {
 
 
 class Grid {
-	constructor(element) {
+	constructor(element, explorarion) {
 		this.vis = element;
 		this.size = 64;
-		this.scale = 1000/64;
 		this.zoom = 1300;
 		this.mouseClickX;
 		this.mouseClickY;
@@ -36,10 +40,11 @@ class Grid {
 		this.camera = null;
 		this.scene = null;
 		this.renderer = null;
-		this.objs = [];
-		this.cubeGeometry = new THREE.BoxBufferGeometry( this.scale*0.8, this.scale, this.scale*0.8 );
-		this.cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff80, overdraw: 0.5 } );
 		this.bars = [];
+		this.ticks = [];
+		this.explorarion = explorarion;
+		this.raycaster = new THREE.Raycaster();
+		this.current_tick = undefined;
 	}
 
 
@@ -48,7 +53,7 @@ class Grid {
 		this.camera.position.set(this.zoom * Math.sin(this.angleX) * Math.cos(this.angleY),
 								 this.zoom * Math.sin(this.angleY),
 							 	 this.zoom * Math.cos(this.angleX) * Math.cos(this.angleY));
-		this.camera.lookAt( new THREE.Vector3(0,0,0) );
+		this.camera.lookAt( look_at );
 		this.scene = new THREE.Scene();
 		this.scene.background = new THREE.Color( 0xf0f0f0 );
 		
@@ -64,7 +69,8 @@ class Grid {
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
 		
 		this.draw_bars(height, width, data);
-
+		this.draw_y_axis();
+		this.draw_ticks();
 		//kmvi -> kernel map voxel index
 		
 		this.render();
@@ -73,7 +79,28 @@ class Grid {
 
 
 	draw_y_axis() {
+		var material = new THREE.LineBasicMaterial({
+			color: 0xf4c2c2
+		});
 
+		var geometry = new THREE.Geometry();
+		geometry.vertices.push(
+			new THREE.Vector3( -(side/2), 0, side/2 ),
+			new THREE.Vector3( -(side/2), y_axis_height, side/2 ),
+		);
+
+		var line = new THREE.Line( geometry, material );
+		this.scene.add( line );
+	}
+
+
+	draw_ticks() {
+		var ticks_spacing = y_axis_height / this.explorarion.exploration_level;
+		for (var i = 0; i < this.explorarion.exploration_level; ++i){
+			this.ticks.push( new THREE.Mesh( sphere_geometry, new THREE.MeshBasicMaterial( {color: 0xf4c2c2} )) );
+			this.ticks[this.ticks.length - 1].position.copy(new THREE.Vector3(-(side/2), ticks_spacing * (i+1), side/2));
+			this.scene.add( this.ticks[this.ticks.length - 1] );
+		}
 	}
 
 	draw_bars(height, width, data) {
@@ -127,7 +154,7 @@ class Grid {
 		this.camera.position.set( this.zoom * Math.sin(this.angleX) * Math.cos(this.angleY) , 
 							 this.zoom * Math.sin(this.angleY), 
 					 		 this.zoom * Math.cos(this.angleX) * Math.cos(this.angleY));
-		this.camera.lookAt( new THREE.Vector3(0,0,0) );
+		this.camera.lookAt( look_at );
 		this.render();
 	}
 
@@ -140,7 +167,7 @@ class Grid {
 		this.camera.position.set( this.zoom * Math.sin(-this.defx) * Math.cos(-this.defy) , 
 							 this.zoom * Math.sin(-this.defy), 
 					 		 this.zoom * Math.cos(-this.defx) * Math.cos(-this.defy));
-		this.camera.lookAt( new THREE.Vector3(0,0,0) );
+		this.camera.lookAt( look_at );
 		this.render();
 	}
 
@@ -148,6 +175,22 @@ class Grid {
 		this.mouseClicked = true;
 		this.mouseClickX = event.clientX;
 		this.mouseClickY = event.clientY;
+		var sceneMouseX = ((this.mouseClickX - this.vis.position().left) / this.vis.width()) * 2 - 1,
+			sceneMouseY = -((this.mouseClickY - this.vis.position().top) / this.vis.height()) * 2 + 1,
+			mouse = new THREE.Vector3(sceneMouseX, sceneMouseY); 
+		
+		this.raycaster.setFromCamera(mouse, this.camera);
+		var intersects = this.raycaster.intersectObjects( this.ticks );
+		
+		
+		if( intersects.length > 0 ) {
+			if (this.current_tick != undefined)
+				this.current_tick.object.material.color.setHex( 0xf4c2c2 );
+			this.current_tick = intersects[0];
+			this.current_tick.object.material.color.setHex( 0xff0000 );
+		}
+		
+		this.render();
 	}
 
 	mouse_up() {
