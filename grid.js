@@ -1,11 +1,11 @@
-look_at = new THREE.Vector3(0,100,0);
+look_at = new THREE.Vector3(0,200,0);
 side = 1000;
 bars_per_side = 64;
-scale = side/bars_per_side;
+scale = side / bars_per_side;
 cubeGeometry = new THREE.BoxBufferGeometry( scale*0.8, scale, scale*0.8 );
 cubeMaterial = new THREE.MeshLambertMaterial( { color: 0x00ff80, overdraw: 0.5 } );
-sphere_geometry = new THREE.SphereGeometry( 10, 32, 32 );
-y_axis_height = 300;
+sphere_geometry = new THREE.SphereGeometry( 5, 32, 32 );
+y_axis_height = 400;
 
 class GridBar {
 	constructor(kernel_map_voxel, position) {
@@ -26,13 +26,10 @@ class GridBar {
 class Grid {
 	constructor(element, explorarion) {
 		this.vis = element;
-		this.size = 64;
 		this.zoom = 1300;
 		this.mouseClickX;
 		this.mouseClickY;
 		this.mouseClicked = false;
-		this.dx = 0;
-		this.dy = 0;
 		this.defx = 0;
 		this.defy = -(Math.PI / 4);
 		this.angleX = 0;
@@ -45,6 +42,7 @@ class Grid {
 		this.explorarion = explorarion;
 		this.raycaster = new THREE.Raycaster();
 		this.current_tick = undefined;
+		this.y_axis = undefined;
 	}
 
 
@@ -69,8 +67,7 @@ class Grid {
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
 		
 		this.draw_bars(height, width, data);
-		this.draw_y_axis();
-		this.draw_ticks();
+		this.draw_y_axis(height, width);
 		//kmvi -> kernel map voxel index
 		
 		this.render();
@@ -78,27 +75,25 @@ class Grid {
 	}
 
 
-	draw_y_axis() {
-		var material = new THREE.LineBasicMaterial({
-			color: 0xf4c2c2
-		});
-
+	draw_y_axis(height, width) {
+		var material = new THREE.LineBasicMaterial({ color: 0xf4c2c2 });
 		var geometry = new THREE.Geometry();
 		geometry.vertices.push(
-			new THREE.Vector3( -(side/2), 0, side/2 ),
-			new THREE.Vector3( -(side/2), y_axis_height, side/2 ),
+			new THREE.Vector3( -((scale*width)/2), 0, (scale*height)/2 ),
+			new THREE.Vector3( -((scale*width)/2), y_axis_height, (scale*height)/2 ),
 		);
 
-		var line = new THREE.Line( geometry, material );
-		this.scene.add( line );
+		this.y_axis = new THREE.Line( geometry, material );
+		this.scene.add( this.y_axis );
+		this.draw_ticks(height, width);
 	}
 
 
-	draw_ticks() {
+	draw_ticks(height, width) {
 		var ticks_spacing = y_axis_height / this.explorarion.exploration_level;
 		for (var i = 0; i < this.explorarion.exploration_level; ++i){
 			this.ticks.push( new THREE.Mesh( sphere_geometry, new THREE.MeshBasicMaterial( {color: 0xf4c2c2} )) );
-			this.ticks[this.ticks.length - 1].position.copy(new THREE.Vector3(-(side/2), ticks_spacing * (i+1), side/2));
+			this.ticks[this.ticks.length - 1].position.copy(new THREE.Vector3(-((scale*width)/2), ticks_spacing * (i+1), (scale*height)/2));
 			this.scene.add( this.ticks[this.ticks.length - 1] );
 		}
 	}
@@ -113,10 +108,17 @@ class Grid {
 	}
 
 
-	update_vis(height, width, data) {
+	update_scene(height, width, data) {
 		this.camera.aspect = this.vis.innerWidth() / this.vis.innerHeight();
 		this.camera.updateProjectionMatrix();
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
+		this.update_bars(height, width, data);
+		this.update_y_axis(height, width);
+		this.render();
+		this.vis.append( this.renderer.domElement );	
+	}
+
+	update_bars(height, width, data){
 		for (var i = 0; i < this.bars.length; ++i) {
 			this.scene.remove(this.bars[i].bar);
 			this.bars[i].bar.material.dispose();
@@ -124,21 +126,34 @@ class Grid {
 			this.bars[i] = undefined;
 		}
 		this.bars = [];
-		this.draw_bars(height, width, data);
-		this.render();
-		this.vis.append( this.renderer.domElement );	
+		this.draw_bars(height, width, data);	
 	}
 
+	update_y_axis(height, width){
+		this.scene.remove(this.y_axis);
+		this.y_axis.material.dispose();
+		this.y_axis.geometry.dispose();
+		this.y_axis = undefined;
+		this.current_tick = undefined;
+		for (var i = 0; i < this.ticks.length; ++i) {
+			this.scene.remove(this.ticks[i]);
+			this.ticks[i].material.dispose();
+			this.ticks[i].geometry.dispose();
+			this.ticks[i] = undefined;
+		}
+		this.ticks = [];
+		this.draw_y_axis(height, width)
+	}
 
 	rotate_vis(px, py) {	
 		if (!this.mouseClicked)
 			return;
 
-		this.dx = px - this.mouseClickX;
-		this.dy = this.mouseClickY - py;
+		var dx = px - this.mouseClickX,
+		    dy = this.mouseClickY - py;
 
-		this.angleX = -((this.dx / 1000) * (Math.PI) + this.defx);
-		this.angleY = -((this.dy / 1000) * (Math.PI) + this.defy);
+		this.angleX = -((dx / 1000) * (Math.PI) + this.defx);
+		this.angleY = -((dy / 1000) * (Math.PI) + this.defy);
 
 		if (this.angleY <= 0){
 			this.angleY = 0;

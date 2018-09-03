@@ -2,6 +2,43 @@ var explorations_count = 0;
 var explorations = [];
 const VIS_NUMBER = 4;
 exploration_menu_options = ['>Large exploration', '>Especific exploration', 'disabled> Select data set']
+var crimes;
+var exploration_level = {year: 5, month: 12, day: 31}
+
+$( document ).ready(function() {
+	$.getJSON("backend/sf_crimes.json", function(result){
+        crimes = result;
+        exploration_level.year = Object.keys(crimes).length;
+        $('.loading_modal').css({'display': 'none'});
+
+        add_new_exploration();
+	});
+});
+
+
+
+/*
+
+class ClassA{
+	constructor(){}
+	foo(){
+		return dict;
+	}
+}
+
+class ClassB{
+	constructor(padre){this.padre = padre; this.layers = {};}
+	init(){
+		var dict_b = this.padre.foo();
+		dict_b['2018'].b = 'zzzzz';
+	}
+}
+
+var obj = new ClassA();
+var obj2 = new ClassB(obj);
+obj2.init();
+console.log(dict);
+*/
 
 function remove_exploration(exploration) {
 	//alert("You're about to remove an exploration, are you sure?");
@@ -54,7 +91,7 @@ function create_exploration(exploration) {
 
 	exploration.find('.vis1').append('<p style="display:none;">' + explorations.length + '</p>');
 
-	explorations.push(new Exploration(exploration));
+	explorations.push(new Exploration(exploration, crimes));
 }
 
 
@@ -99,7 +136,3 @@ function add_new_exploration() {
 	onNewExploration();
 }
 
-
-$(document).ready ( function(){
-   add_new_exploration();
-});
