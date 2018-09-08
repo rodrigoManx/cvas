@@ -43,6 +43,7 @@ console.log(dict);
 function remove_exploration(exploration) {
 	//alert("You're about to remove an exploration, are you sure?");
 	if (confirm("You're about to remove an exploration, are you sure?")){
+		explorations[parseInt($(exploration.parentNode).find('.index').text())] = null;
 		exploration.parentNode.remove();
 		explorations_count-=1;
 		modify_exploration_css();
@@ -81,7 +82,7 @@ function select_exploration_type(exploration, type, menu) {
 function create_exploration(exploration) {
 	//append close button
 	exploration.append('<button class="vis-close-button" onclick="remove_exploration(this)">x</button>');
-
+	exploration.append('<p class="index" style="display:none;">' + explorations.length + '</p>');
 	//append exploration menu
 	create_exploration_menu(exploration);
 

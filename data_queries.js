@@ -47,7 +47,9 @@ function crimes_by_month_2() {
 				for (var category in crimes[year][month][day]){
 					if (dict[month][category] == undefined)
 						dict[month][category] = [];
-					dict[month][category].push(crimes[year][month][day][category]);
+					for (var index =  0; index < crimes[year][month][day][category].length; ++index){
+						dict[month][category].push(crimes[year][month][day][category][index]);
+					}
 				}
 			}
 		}

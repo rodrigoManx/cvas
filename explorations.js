@@ -14,7 +14,7 @@ class Exploration {
 		this.renderer = null;
 		this.vis0_obj = new Grid(this.vis0, this);
 		this.vis1_obj = new Kernelmap(this);
-		this.crimes = crimes_by_year();
+		this.crimes = crimes_by_month_2();
 	}
 
 	load_data() {
@@ -33,7 +33,7 @@ class Exploration {
 
 	init_large_exploration() {
 		this.vis1_obj.init();
-		this.vis0_obj.init(this.vis1_obj.height, this.vis1_obj.width, []);
+		this.vis0_obj.init(this.vis1_obj.height, this.vis1_obj.width, this.vis1_obj.kernel_map_layers);
 		this.vis0.bind( 'mousemove', onDocumentMouseMove);
 		this.vis0.bind( 'mousedown', onDocumentMouseDown);
 		this.vis0.bind( 'mouseup', onDocumentMouseUp);
@@ -58,7 +58,7 @@ function onWindowResize() {
 
 
 function onNewExploration() {
-
+	console.log(explorations);
 	$('canvas').remove();
 	for (var i = 0; i < explorations.length; ++i){
 		try {

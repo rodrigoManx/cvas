@@ -3,6 +3,8 @@ var GRID_SIDE_SIZE = 64
 var shift_pressed = false;
 var kernel_layer_hidden = undefined; 
 
+const redScale = d3.scaleSequential( d3.interpolateReds )
+						 	.domain([0, 1000])
 
 document.onkeydown = function(event) {
 	switch( event.keyCode ) {
@@ -32,7 +34,7 @@ class Kernelmap {
 		this.vis.append(this.gridLayer);
 		this.width = 0;
 		this.height = 0;
-		this.kernel_map_layers = {}
+		this.kernel_map_layers = {};
 		this.bounds = undefined;
 	}
 
@@ -62,20 +64,23 @@ class Kernelmap {
 			this.width = Math.ceil(small_side / (big_side / GRID_SIDE_SIZE));
 		}
 
-		var sss = big_side / GRID_SIDE_SIZE;
-		var data = new Array();
+		this.sss = big_side / GRID_SIDE_SIZE;
+		this.data = new Array();
 
-		for (var xpos = 0, row = 0; xpos < this.vis.innerWidth(); xpos+=sss, row++) {
-			data.push(new Array());
-			for (var ypos = 0; ypos < this.vis.innerHeight(); ypos+=sss) {
-				data[row].push({
+		for (var ypos = 0, row = 0; ypos < this.vis.innerHeight(); ypos+=this.sss, row++) {
+			for (var xpos = 0; xpos < this.vis.innerWidth(); xpos+=this.sss) {
+				this.data.push(new Array());
+				this.data[row].push({
 					x: xpos,
 					y: ypos,
+					r: (this.height-1) - row,
+					c: this.data[row].length
 				})
+				//for (var ypos = 0; ypos < this.vis.innerHeight(); ypos+=sss) {
+				//}
 			}
 		}
 		this.build_map();
-		this.build_grid(this.vis.innerWidth(), this.vis.innerHeight(), data, sss);
 	}
 
 
@@ -84,21 +89,34 @@ class Kernelmap {
 
 		var height = this.bounds.f.f - this.bounds.f.b;
 		var p1 = height / this.height;
-		console.log(p1);
 
 		var width = this.bounds.b.f - this.bounds.b.b;
 		var p2 = width / this.width;
-		console.log(p2);		
 
 		console.log(crimes);
 		for (var key in crimes){
-			kernel_map_layers[key] = [];
-			for (var category in crimes[key]){
-				for (var crime in crimes[key][category]){
-					Math.floor((crime.latitude - this.bounds.f.b) / p1)
+			this.kernel_map_layers[key] = [];
+			for (let  i = 0; i < this.height; ++i){
+				this.kernel_map_layers[key][i] = [];
+				for (let j = 0; j < this.width; ++j)
+					this.kernel_map_layers[key][i][j] = 0;
+			}
+
+			for (let category in crimes[key]){
+				for (let crime in crimes[key][category]){
+					let lat = parseFloat(crimes[key][category][crime].latitude);
+					let lon = parseFloat(crimes[key][category][crime].longitude);
+					if (lat > this.bounds.f.b && lat < this.bounds.f.f && lon > this.bounds.b.b && lon < this.bounds.b.f)
+					{
+						let index_i = Math.floor(( lat - this.bounds.f.b) / p1);
+						let index_j = Math.floor(( lon - this.bounds.b.b) / p2);
+						this.kernel_map_layers[key][index_i][index_j]+=1;
+					}
 				}
 			}
 		}
+		console.log(this.kernel_map_layers);
+		this.build_grid(this.vis.innerWidth(), this.vis.innerHeight(), this.data, this.sss, this.kernel_map_layers);
 	}
 
 
@@ -118,7 +136,10 @@ class Kernelmap {
 	}
 
 
-	build_grid(width, height, data, sss) {
+	build_grid(width, height, data, sss, kernel_map_layers) {
+		var max = 30;
+		var min = 0;
+
 		while (this.gridLayer.get(0).firstChild) {
 			this.gridLayer.get(0).removeChild(this.gridLayer.get(0).firstChild);
 		}
@@ -142,8 +163,9 @@ class Kernelmap {
 			.attr("y", function(d) { return d.y; })
 			.attr("width", sss.toString())
 			.attr("height", sss.toString())
-			.style("fill", "red")
-			.style("fill-opacity", "0.4")
+			.style("fill", function(d) {
+				return redScale(kernel_map_layers['01'][d.r][d.c]);})//"red")
+			.style("fill-opacity", "0.8")
 			.style("stroke", "white");
 	}
 }

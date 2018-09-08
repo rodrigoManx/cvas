@@ -47,6 +47,7 @@ class Grid {
 
 
 	init(height, width, data) {
+		data=[];
 		this.camera = new THREE.PerspectiveCamera( 45, this.vis.innerWidth() / this.vis.innerHeight(), 1, 10000 );
 		this.camera.position.set(this.zoom * Math.sin(this.angleX) * Math.cos(this.angleY),
 								 this.zoom * Math.sin(this.angleY),
@@ -109,6 +110,7 @@ class Grid {
 
 
 	update_scene(height, width, data) {
+		data=[]
 		this.camera.aspect = this.vis.innerWidth() / this.vis.innerHeight();
 		this.camera.updateProjectionMatrix();
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
