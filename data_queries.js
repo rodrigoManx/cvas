@@ -1,4 +1,4 @@
-function crimes_by_year() {
+function crimesByYear() {
 	var dict = {}
 	for (var year in crimes) {
 		dict[year] = {}
@@ -13,7 +13,7 @@ function crimes_by_year() {
 	return dict;
 }
 
-function crimes_by_month(year) {
+function crimesByMonth(year) {
 	var dict = {}
 	for (var month in crimes[year]){
 		dict[month] = {}
@@ -26,7 +26,7 @@ function crimes_by_month(year) {
 	return dict;
 }
 
-function crimes_by_day(year, month) {
+function crimesByDay(year, month) {
 	var dict = {}
 	for (var day in crimes[year][month]){
 		dict[day] = {}
@@ -37,7 +37,7 @@ function crimes_by_day(year, month) {
 	return dict;
 }
 
-function crimes_by_month_2() {
+function crimesByMonth2() {
 	var dict = {}
 	for (var year in crimes) {
 		for (var month in crimes[year]){
@@ -57,7 +57,7 @@ function crimes_by_month_2() {
 	return dict;
 }
 
-function crimes_by_day_2() {
+function crimesByDay2() {
 	var dict = {}
 	for (var year in crimes) {
 		for (var month in crimes[year]){

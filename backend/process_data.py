@@ -30,11 +30,11 @@ def process_crimes(count):
 				crime['time'] = row[5]
 				crime['latitude'] = row[10]
 				crime['longitude'] = row[9]
-
+				crime['clusters'] = {}
 
 				date = row[4].split('/')
 				crimeYear = date[2]
-				crimeMonth = monthName[date[0]]
+				crimeMonth = date[0]
 				crimeDay = date[1]
 				crimeCategory = row[1]
 

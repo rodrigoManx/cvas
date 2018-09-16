@@ -5,17 +5,27 @@
 	<title></title>
 	<link rel="stylesheet" type="text/css" href="content.css"> 
 	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.8/interact.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDLEXc9xUUxTHOLE8GwqpYE3YIGKt1dsMI&libraries=visualization"></script>
+
 	<script type="text/javascript" src="three.js"></script>
-	<script type="text/javascript" src="grid.js"></script>
-	<script type="text/javascript" src="explorations.js"></script>
-	<script type="text/javascript" src="kernelmap.js"></script>
+	<script type="text/javascript" src="jDBSCAN.js"></script>
+	<script type="text/javascript" src="data_queries.js"></script>
+
+	<script type="text/javascript" src="time_vis_builder.js"></script>
+	<script type="text/javascript" src="time_vis.js"></script>
+	<script type="text/javascript" src="bars_vis.js"></script>
+	<script type="text/javascript" src="map_vis.js"></script>
+	<script type="text/javascript" src="map_vis_builder.js"></script>
+
+	<script type="text/javascript" src="exploration.js"></script>
 	<script type="text/javascript" src="newexploration.js"></script>
 </head>
 <body>
-	
-	<div id="header"><button id="new-exploration-button" onclick="add_new_exploration()"> + </button></div>		
+	<div class="loading-modal"><div class="loader"></div></div>
+	<div id="header"><button id="new-exploration-button" onclick="addNewExploration()"> + </button></div>		
 	<div id="content"></div>
 </body>
 </html>

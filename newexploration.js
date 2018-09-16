@@ -1,17 +1,18 @@
-var explorations_count = 0;
+var explorationsCount = 0;
 var explorations = [];
-const VIS_NUMBER = 4;
-exploration_menu_options = ['>Large exploration', '>Especific exploration', 'disabled> Select data set']
+const VIS_NUMBER = 3;
+explorationMenuOptions = ['>Large exploration', '>Especific exploration', 'disabled> Select data set']
 var crimes;
-var exploration_level = {year: 5, month: 12, day: 31}
+var explorationLevel = {year: 5, month: 12, day: 31}
 
 $( document ).ready(function() {
 	$.getJSON("backend/sf_crimes.json", function(result){
         crimes = result;
-        exploration_level.year = Object.keys(crimes).length;
-        $('.loading_modal').css({'display': 'none'});
+        console.log(crimes);
+        explorationLevel.year = Object.keys(crimes).length;
+        $('.loading-modal').css({'display': 'none'});
 
-        add_new_exploration();
+        addNewExploration();
 	});
 });
 
@@ -40,20 +41,20 @@ obj2.init();
 console.log(dict);
 */
 
-function remove_exploration(exploration) {
+function removeExploration(exploration) {
 	//alert("You're about to remove an exploration, are you sure?");
 	if (confirm("You're about to remove an exploration, are you sure?")){
 		explorations[parseInt($(exploration.parentNode).find('.index').text())] = null;
 		exploration.parentNode.remove();
-		explorations_count-=1;
-		modify_exploration_css();
-		modify_vis_css();
-		onNewExploration();
+		explorationsCount-=1;
+		modifyExplorationCss();
+		modifyVisCss();
+		onNewExploration(-1);
 	}
 }
 
 
-function create_exploration_menu(exploration) {
+function createExplorationMenu(exploration) {
 	
 	var content = $('<div/>').addClass('menu-content');
 	var menu = $('<div/>').addClass('exploration-menu').css({'z-index' : '5'});
@@ -62,8 +63,8 @@ function create_exploration_menu(exploration) {
 		content.append('<button style="display: block; height: 9.324vh; width: 100%; margin: 3.007vh 0 3.007vh 0;"'
 					   + ' name="' + explorations.length.toString() + '"'
 					   + ' value="' + (i+1).toString() + '"'
-					   + ' onclick="select_exploration_type(explorations[this.name], this.value, this.parentElement.parentElement)"'
-					   + exploration_menu_options[i] 
+					   + ' onclick="selectExplorationType(explorations[this.name], this.value, this.parentElement.parentElement)"'
+					   + explorationMenuOptions[i] 
 					   + '</button>');
 	}
 
@@ -72,19 +73,19 @@ function create_exploration_menu(exploration) {
 }
 
 
-function select_exploration_type(exploration, type, menu) {
+function selectExplorationType(exploration, type, menu) {
 	exploration.type = parseInt(type);
-	exploration.load_data();
+	exploration.loadData();
 	$(menu).css({'display': 'none'});
 }
 
 
-function create_exploration(exploration) {
+function createExploration(exploration) {
 	//append close button
-	exploration.append('<button class="vis-close-button" onclick="remove_exploration(this)">x</button>');
+	exploration.append('<button class="vis-close-button" onclick="removeExploration(this)">x</button>');
 	exploration.append('<p class="index" style="display:none;">' + explorations.length + '</p>');
 	//append exploration menu
-	create_exploration_menu(exploration);
+	createExplorationMenu(exploration);
 
 	//append vis
 	for (var i = 0; i < VIS_NUMBER; ++i)
@@ -92,48 +93,51 @@ function create_exploration(exploration) {
 
 	exploration.find('.vis1').append('<p style="display:none;">' + explorations.length + '</p>');
 
-	explorations.push(new Exploration(exploration, crimes));
+	explorations.push(new Exploration(exploration, crimes, explorations.length));
 }
 
 
-function modify_vis_css() {
-	if (explorations_count == 1 || explorations_count == 2)
-		$('.vis').css({'width': '50%', 'height':'50%'}); 
+function modifyVisCss() {
+	if (explorationsCount == 1 || explorationsCount == 2){
+		$('.vis0').css({'width': '50%', 'height':'50%'}); 
+		$('.vis1').css({'width': '50%', 'height':'50%'}); 
+		$('.vis2').css({'width': '100%', 'height': '50%'});
+	}
 	else
 		$('.vis').css({'width': '100%', 'height':'25%'}); 	
 }
 
 
-function modify_exploration_menu() {
-	if (explorations_count == 1)
+function modifyExplorationMenu() {
+	if (explorationsCount == 1)
 		$('.exploration-menu').css({'width': '24%', 'margin-left':'-12%'}); 	
-	else if (explorations_count == 2)
+	else if (explorationsCount == 2)
 		$('.exploration-menu').css({'width': '48%', 'margin-left':'-24%'});
 	else
 		$('.exploration-menu').css({'width': '70%', 'margin-left':'-35%'}); 	
 }
 
 
-function modify_exploration_css() {
-	if (explorations_count == 0) {
+function modifyExplorationCss() {
+	if (explorationsCount == 0) {
 		$('.exploration').css({'width': '99.6%'});
 	}
 	else {
-		$('.exploration').css({'width': (99.6 * (1 / (explorations_count))).toString() + '%'}); 
+		$('.exploration').css({'width': (99.6 * (1 / (explorationsCount))).toString() + '%'}); 
 	}
-	modify_exploration_menu();
+	modifyExplorationMenu();
 }
 
 
-function add_new_exploration() {
-	var new_exploration = $('<div/>').addClass('exploration');
-	$('#content').append(new_exploration);
+function addNewExploration() {
+	var newExploration = $('<div/>').addClass('exploration');
+	$('#content').append(newExploration);
 	
-	create_exploration(new_exploration);
+	createExploration(newExploration);
 	
-	explorations_count+=1;
-	modify_exploration_css();
-	modify_vis_css();
-	onNewExploration();
+	explorationsCount+=1;
+	modifyExplorationCss();
+	modifyVisCss();
+	onNewExploration(1);
 }
 
