@@ -1,9 +1,15 @@
+function customSort(a, b) {
+	return a.count - b.count;
+}
+
 class MapVisBuilder {
 	constructor(vis){
 		this.map = vis;
+		this.currentKey;
+		this.currentSubKey;
 	}
 
-	buildKernelMapLayers() {
+	/*buildKernelMapLayers() {
 		this.map.kernelMapLayers = {};
 		var height = this.map.bounds.f.f - this.map.bounds.f.b;
 		var p1 = height / this.map.height;
@@ -33,6 +39,60 @@ class MapVisBuilder {
 			}
 		}
 		this.buildGrid(this.map.vis.innerWidth(), this.map.vis.innerHeight());
+	}*/
+
+	buildKernelMapLayer(key, subKey) {
+		console.log(this.map.exploration.crimes);
+
+		if (key != undefined && subKey != undefined){
+			this.currentKey = key;
+			this.currentSubKey = subKey;
+		}
+		this.map.kernelMapLayer = [];
+		var height = this.map.bounds.f.f - this.map.bounds.f.b;
+		var p1 = height / this.map.height;
+
+		var width = this.map.bounds.b.f - this.map.bounds.b.b;
+		var p2 = width / this.map.width;
+
+		for (let  i = 0; i < this.map.height; ++i){
+			this.map.kernelMapLayer[i] = [];
+			for (let j = 0; j < this.map.width; ++j)
+				this.map.kernelMapLayer[i][j] = {count:0, categories:{}};
+		}
+
+		//return;
+		for (let category in this.map.crimes[this.currentKey][this.currentSubKey].crimes){
+			for (let crime in this.map.crimes[this.currentKey][this.currentSubKey].crimes[category]){
+				let lat = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
+				let lon = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
+				if (lat > this.map.bounds.f.b && lat < this.map.bounds.f.f && lon > this.map.bounds.b.b && lon < this.map.bounds.b.f)
+				{
+					let indexI = Math.floor(( lat - this.map.bounds.f.b) / p1);
+					let indexJ = Math.floor(( lon - this.map.bounds.b.b) / p2);
+					this.map.kernelMapLayer[indexI][indexJ].count+=1;
+					if (this.map.kernelMapLayer[indexI][indexJ].categories[category] == undefined)
+						this.map.kernelMapLayer[indexI][indexJ].categories[category] = 1;
+					else this.map.kernelMapLayer[indexI][indexJ].categories[category]+=1;
+					
+				}
+			}
+		}
+
+		for (let  i = 0; i < this.map.height; ++i){
+			for (let j = 0; j < this.map.width; ++j){
+				var old = this.map.kernelMapLayer[i][j];
+				this.map.kernelMapLayer[i][j] = {count: old.count, categories: []};
+				for (let key in old.categories){
+					let value = old.categories[key];
+					let obj = {name: key, count: value};
+					this.map.kernelMapLayer[i][j].categories.push(obj);
+				}
+				this.map.kernelMapLayer[i][j].categories.sort(customSort).reverse();
+			}	
+		}
+		//console.log(this.map.kernelMapLayer);
+		this.buildGrid(this.map.vis.innerWidth(), this.map.vis.innerHeight());
 	}
 
 
@@ -40,6 +100,7 @@ class MapVisBuilder {
 		this.map.map = new google.maps.Map(this.map.mapLayer.get(0), {
 			zoom: 12,
 			center: { lat: 37.763456, lng: -122.449214 },
+		    disableDefaultUI: true,
 			mapTypeId: 'roadmap',
 			styles: [{
 				featureType: "all",
@@ -51,21 +112,21 @@ class MapVisBuilder {
 		var map = this.map;
 		google.maps.event.addListener(this.map.map, 'bounds_changed', function() {
 			map.bounds = this.getBounds();
-			if (map.dataVisualizationMode == VISUALIZATION.KERNEL_MAP)
-				map.builder.buildKernelMapLayers();
-			else map.builder.buildClusters();
+			//if (map.dataVisualizationMode == VISUALIZATION.KERNEL_MAP)
+			//	map.builder.buildKernelMapLayers();
+			//else map.builder.buildClusters();
 		});
 	}
 
 
 	buildGrid(width, height) {
-		var kernelMapLayers = this.map.kernelMapLayers;
+		var kernelMapLayer = this.map.kernelMapLayer;
 		var sss = this.map.sss;
 		var data = this.map.data;
 
-		this.map.gridLayer.find('svg').remove();
+		this.map.heatmapLayer.find('svg').remove();
 		
-		var grid = d3.select(this.map.gridLayer.get(0))
+		var grid = d3.select(this.map.heatmapLayer.get(0))
 			.append("svg")
 			.attr("width", width)
 			.attr("height", height)
@@ -84,33 +145,38 @@ class MapVisBuilder {
 			.attr("y", function(d) { return d.y; })
 			.attr("width", sss.toString())
 			.attr("height", sss.toString())
-			.style("fill", function(d) { return redScale(kernelMapLayers['2010'][d.r][d.c]);})//"red")
-			.style("fill-opacity", "0.8")
-			.style("stroke", "white");
+			.style("fill", function(d) { return redScale(kernelMapLayer[d.r][d.c].count);})
+			.style("fill-opacity", "0.8");
+			//.style("stroke", "white");
 
 		this.map.exploration.bars.updateScene(this.map.height, this.map.width, this.map.kernelMapLayers);
 		google.maps.event.clearListeners(this.map.map, 'bounds_changed');
 	}
 
-	buildClusters() {
+	buildClusters(key, subKey) {
+		if (key != undefined && subKey != undefined){
+			this.currentKey = key;
+			this.currentSubKey = subKey;
+		}
 		var data = [];
 		var boundingBoxLeftLatitude = this.map.bounds.f.b;
 		var boundingBoxBotLongitude = this.map.bounds.b.b;
 		var visWidth = this.map.vis.innerWidth();		
 		var visHeight = this.map.vis.innerHeight();
 
-		var height = this.map.bounds.f.f - this.map.bounds.f.b;
-		var p1 = height / visHeight;
+		var p1 = (this.map.bounds.f.f - this.map.bounds.f.b) / visHeight;
+		var p2 = (this.map.bounds.b.f - this.map.bounds.b.b) / visWidth;
 
-		var width = this.map.bounds.b.f - this.map.bounds.b.b;
-		var p2 = width / visWidth;
+		for (let category in this.map.crimes[this.currentKey][this.currentSubKey].crimes){
+			for (let crime in this.map.crimes[this.currentKey][this.currentSubKey].crimes[category]){
+				let lat = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
+				let lon = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
+				if (lat > this.map.bounds.f.b && lat < this.map.bounds.f.f && lon > this.map.bounds.b.b && lon < this.map.bounds.b.f)
+					data.push(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime]);
+			}
+		}
 
-		var crimes = this.map.exploration.crimes;
-
-		for (let category in crimes['2013'])
-			for (let crime in crimes['2013'][category])
-				data.push(crimes['2013'][category][crime]);
-
+		//console.log(data);
 		var dbscanner = jDBSCAN().eps(0.4).minPts(5).exploration(0).data(data);
 		dbscanner();
 		var color = d3.scaleOrdinal(d3.schemeCategory20).domain(d3.range([0, d3.max(20)]));
@@ -144,12 +210,12 @@ class MapVisBuilder {
 		if (regions.length == 0)
 			return;
 
-		this.map.gridLayer.find('.kernelMap-svg').find('.highlighted').remove();
+		this.map.heatmapLayer.find('.kernelMap-svg').find('.highlighted').remove();
 		
 		var height = this.map.height;
 		var sss = this.map.sss;
 
-		var grid = d3.select(this.map.gridLayer.get(0))
+		var grid = d3.select(this.map.heatmapLayer.get(0))
 			.selectAll('.kernelMap-svg');
 
 		var row = grid.selectAll(".highlighted")

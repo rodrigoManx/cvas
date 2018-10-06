@@ -1,4 +1,5 @@
 var EXPLORATION_TYPE = {'DEFAULT': 0, 'LARGE': 1, 'ESPECIFIC': 2}
+var GRANULARITY = { YEAR: {COLS : 12, ROWS: 1}, MONTH: {COLS: 31, ROWS: 12}, DAY: {COLS: 24, ROWS: 31}}
 
 window.addEventListener( 'resize', onWindowResize, false );
 
@@ -15,7 +16,8 @@ class Exploration {
 		this.camera = null;
 		this.scene = null;
 		this.renderer = null;
-		this.crimes = crimesByYear();
+		this.crimes = crimesByMonth();
+		this.granularity = GRANULARITY.MONTH;
 	}
 
 	getLabels() {
@@ -63,6 +65,7 @@ class Exploration {
 	initLargeExploration() {
 		this.map.init();
 		this.bars.init();
+		this.time.init();
 		this.vis0.bind( 'mousemove', onDocumentMouseMove);
 		this.vis0.bind( 'mousedown', onDocumentMouseDown);
 		this.vis0.bind( 'mouseup', onDocumentMouseUp);

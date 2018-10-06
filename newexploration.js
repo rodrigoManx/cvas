@@ -1,45 +1,35 @@
 var explorationsCount = 0;
 var explorations = [];
 const VIS_NUMBER = 3;
-explorationMenuOptions = ['>Large exploration', '>Especific exploration', 'disabled> Select data set']
+explorationMenuOptions = ['>Large exploration', '>Especific exploration', 'disabled> Select data set'];
 var crimes;
 var explorationLevel = {year: 5, month: 12, day: 31}
+
+var crimeCategories = ["OTHER OFFENSES", "VANDALISM", "LARCENY/THEFT", "DRUG/NARCOTIC", "ASSAULT", "BURGLARY", "NON-CRIMINAL", "SUSPICIOUS OCC", "LIQUOR LAWS", "WARRANTS", "EMBEZZLEMENT", "FORGERY/COUNTERFEITING", "VEHICLE THEFT", "ROBBERY", "MISSING PERSON", "DRUNKENNESS", "FAMILY OFFENSES", "DISORDERLY CONDUCT", "TRESPASS", "SECONDARY CODES", "WEAPON LAWS", "SEX OFFENSES, FORCIBLE", "STOLEN PROPERTY", "FRAUD", "PROSTITUTION", "LOITERING", "DRIVING UNDER THE INFLUENCE", "RUNAWAY", "KIDNAPPING", "RECOVERED VEHICLE", "ARSON", "EXTORTION", "BAD CHECKS", "BRIBERY", "SUICIDE", "PORNOGRAPHY/OBSCENE MAT", "SEX OFFENSES, NON FORCIBLE", "GAMBLING", "TREA", "OTHERS"];
+var categoryColors = {};
+
 
 $( document ).ready(function() {
 	$.getJSON("backend/sf_crimes.json", function(result){
         crimes = result;
         console.log(crimes);
         explorationLevel.year = Object.keys(crimes).length;
+        GRANULARITY.YEAR.ROWS = Object.keys(crimes).length;
+
+        var colors = d3.scaleOrdinal(d3.schemeCategory20c).domain(crimeCategories.slice(0,20));
+        for (let i = 0; i < 20; ++i)
+        	categoryColors[crimeCategories[i]] = colors(crimeCategories[i]);
+        
+        colors = d3.scaleOrdinal(d3.schemeCategory20b).domain(crimeCategories.slice(20));
+        for (let i = 20; i < crimeCategories.length; ++i)
+        	categoryColors[crimeCategories[i]] = colors(crimeCategories[i]);
+
         $('.loading-modal').css({'display': 'none'});
 
-        addNewExploration();
+		addNewExploration();
 	});
 });
 
-
-
-/*
-
-class ClassA{
-	constructor(){}
-	foo(){
-		return dict;
-	}
-}
-
-class ClassB{
-	constructor(padre){this.padre = padre; this.layers = {};}
-	init(){
-		var dict_b = this.padre.foo();
-		dict_b['2018'].b = 'zzzzz';
-	}
-}
-
-var obj = new ClassA();
-var obj2 = new ClassB(obj);
-obj2.init();
-console.log(dict);
-*/
 
 function removeExploration(exploration) {
 	//alert("You're about to remove an exploration, are you sure?");
@@ -54,38 +44,10 @@ function removeExploration(exploration) {
 }
 
 
-function createExplorationMenu(exploration) {
-	
-	var content = $('<div/>').addClass('menu-content');
-	var menu = $('<div/>').addClass('exploration-menu').css({'z-index' : '5'});
-
-	for (var i = 0; i < 3; ++i){
-		content.append('<button style="display: block; height: 9.324vh; width: 100%; margin: 3.007vh 0 3.007vh 0;"'
-					   + ' name="' + explorations.length.toString() + '"'
-					   + ' value="' + (i+1).toString() + '"'
-					   + ' onclick="selectExplorationType(explorations[this.name], this.value, this.parentElement.parentElement)"'
-					   + explorationMenuOptions[i] 
-					   + '</button>');
-	}
-
-	menu.append(content);
-	exploration.append(menu);
-}
-
-
-function selectExplorationType(exploration, type, menu) {
-	exploration.type = parseInt(type);
-	exploration.loadData();
-	$(menu).css({'display': 'none'});
-}
-
-
 function createExploration(exploration) {
 	//append close button
 	exploration.append('<button class="vis-close-button" onclick="removeExploration(this)">x</button>');
 	exploration.append('<p class="index" style="display:none;">' + explorations.length + '</p>');
-	//append exploration menu
-	createExplorationMenu(exploration);
 
 	//append vis
 	for (var i = 0; i < VIS_NUMBER; ++i)
@@ -139,5 +101,5 @@ function addNewExploration() {
 	modifyExplorationCss();
 	modifyVisCss();
 	onNewExploration(1);
+	explorations[explorations.length - 1].initLargeExploration();
 }
-

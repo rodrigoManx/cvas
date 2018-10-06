@@ -27,18 +27,20 @@ def process_crimes(count):
 				#crime['category'] = row[1]
 				#crime['description'] = row[2]
 				#crime['dayOfWeek'] = row[3]
-				crime['time'] = row[5]
+				#crime['time'] = row[5]
 				crime['latitude'] = row[10]
 				crime['longitude'] = row[9]
 				crime['clusters'] = {}
+
 
 				date = row[4].split('/')
 				crimeYear = date[2]
 				crimeMonth = date[0]
 				crimeDay = date[1]
 				crimeCategory = row[1]
+				crimeHour = row[5].split(':')[0]
 
-				if int(crimeYear) >= 2010: 
+				if int(crimeYear) >= 2012: 
 					try:
 						year = crimes[crimeYear]
 						try:
@@ -46,20 +48,28 @@ def process_crimes(count):
 							try:
 								day = month[crimeDay]
 								try:
-									category = day[crimeCategory]
-									category.append(crime)
+									hour = day[crimeHour]
+									try:
+										category = hour[crimeCategory]
+										category.append(crime)
+									except KeyError:
+										hour[crimeCategory] = [crime]
 								except KeyError:
-									day[crimeCategory] = [crime]
+									categoryDict = {crimeCategory: [crime]}
+									day[crimeHour] = categoryDict
 							except KeyError:
 								categoryDict = {crimeCategory: [crime]}
-								month[crimeDay] = categoryDict	
+								hourDict = {crimeHour: categoryDict}
+								month[crimeDay] = hourDict	
 						except KeyError:
 							categoryDict = {crimeCategory: [crime]}
-							dayDict = {crimeDay: categoryDict}
+							hourDict = {crimeHour: categoryDict}
+							dayDict = {crimeDay: hourDict}
 							year[crimeMonth] = dayDict
 					except KeyError:
 						categoryDict = {crimeCategory: [crime]}
-						dayDict = {crimeDay: categoryDict}
+						hourDict = {crimeHour: categoryDict}
+						dayDict = {crimeDay: hourDict}
 						monthDict = {crimeMonth: dayDict}
 						crimes[crimeYear] = monthDict
 

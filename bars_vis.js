@@ -1,22 +1,46 @@
-lookAt = new THREE.Vector3(0,200,0);
+lookAt = new THREE.Vector3(0,0,0);
 side = 1000;
 barsPerSide = 64;
 scale = side / barsPerSide;
 sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
 yAxisHeight = 400;
 
+
 class GridBar {
-	constructor(kernelMapVoxel, position, bars, row, col) {
-		this.label = kernelMapVoxel;
-		var barHeight = bars.getBarHeight(kernelMapVoxel);
-		this.bar = new THREE.Mesh( new THREE.BoxBufferGeometry( scale*0.9, barHeight, scale*0.9 ), 
-								   new THREE.MeshStandardMaterial( { color: 0x00ff80, transparent: true, opacity:1, overdraw: 0.5 } ) );
-		this.bar.position.copy( new THREE.Vector3( 
-								(position.x * scale) + (scale / 2), 
-								barHeight / 2, 
-								(position.z * scale) + (scale / 2)) );
+	constructor(voxel, position, bars, row, col) {
+		var height = bars.scale(voxel.count);
+		this.bars = [];
+		this.createBars(voxel, position, bars);
 		this.row = row;
 		this.col = col;
+	}
+
+
+	createBars(voxel, position, bars) {
+		var top = 3;
+		var finalVoxel = {categories:[]};
+		if (voxel.categories.length > top){
+			var othersSum=0;
+			for (let i = top; i < voxel.categories.length; ++i)
+				othersSum+=voxel.categories[i].count;
+
+			for (let i = 0; i < top; ++i)
+				finalVoxel.categories.push(voxel.categories[i])
+			finalVoxel.categories.push({name: 'OTHERS', count: othersSum});
+		}
+		else finalVoxel = voxel;
+
+		var accumulateHeight = 0;
+		for (let i = finalVoxel.categories.length-1; i >= 0; --i){
+			var height = bars.scale(finalVoxel.categories[i].count);
+			this.bars.push(new THREE.Mesh( new THREE.BoxBufferGeometry( scale*0.9, height, scale*0.9 ), 
+							   			   new THREE.MeshStandardMaterial( { color: categoryColors[finalVoxel.categories[i].name], transparent: true, opacity:1, overdraw: 0.5 })));
+			this.bars[this.bars.length-1].position.copy( new THREE.Vector3( 
+														 (position.x * scale) + (scale/2), 
+														 accumulateHeight + height/2, 
+														 (position.z * scale) + (scale/2)) );
+			accumulateHeight+=height;
+		}
 	}
 }
 
@@ -52,6 +76,8 @@ class BarsVis {
 		this.yAxis = undefined;
 		this.labels = [];
 		this.ticksSpacing = 0;
+		this.scale;
+		this.directionalLight;
 	}
 
 
@@ -68,9 +94,10 @@ class BarsVis {
 		var ambientLight = new THREE.AmbientLight( 0x606060 );
 		this.scene.add( ambientLight );
 		
-		var directionalLight = new THREE.DirectionalLight( 0xffffff );
-		directionalLight.position.set( 0, 0.75, 1 ).normalize();
-		this.scene.add( directionalLight );
+		this.directionalLight = new THREE.DirectionalLight( 0xffffff );
+		this.directionalLight.position.set( Math.sin(this.angleX), 0.5, Math.cos(this.angleX) ).normalize();
+		this.scene.add( this.directionalLight );
+
 		this.renderer = new THREE.WebGLRenderer( { antialias: true } );
 		this.renderer.setPixelRatio( this.vis.devicePixelRatio );
 		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
@@ -117,29 +144,55 @@ class BarsVis {
 
 		for (let j = -height/2, row = height-1; j < height/2 ; ++j, --row){
 			for (let i = -width/2, col = 0; i < width/2 ; ++i, ++col){
-				this.bars.push(new GridBar(highestOrLowest[row][col], {'x': i, 'z': j}, this, row, col));
-				this.scene.add(this.bars[this.bars.length - 1].bar);
+				var voxel = this.exploration.map.kernelMapLayer[row][col];
+				this.bars.push(new GridBar(voxel, {'x': i, 'z': j}, this, row, col));
+				for (let c = 0; c < this.bars[this.bars.length - 1].bars.length; ++c)
+					this.scene.add(this.bars[this.bars.length - 1].bars[c]);
 			}
 		}
 	}
 
 
 	updateScene(height, width) {
+		console.log(this.exploration.map.kernelMapLayer);
+		console.log(this.exploration.map.width);
+		console.log(this.exploration.map.height);
+
+		var min = 50000;
+		var max = 0;
+		var ii,jj;
+		for (let i = 0; i < this.exploration.map.height; ++i){
+			for (let j = 0; j < this.exploration.map.width; ++j){
+				var c = this.exploration.map.kernelMapLayer[i][j].count;
+				if (c != 0 && c < min)
+					min = c;
+				if (c > max){
+					max = c;
+					ii = i;
+					jj = j;
+				}
+			}
+		}
+		this.scale = d3.scaleLinear().domain([min, max]).range([0, 400]);
+		console.log(min);
+		console.log(max);
 		//data=[];
 		this.camera.aspect = this.vis.innerWidth() / this.vis.innerHeight();
 		this.camera.updateProjectionMatrix();
-		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight() );
-		this.updateYAxis(height, width);
+		this.renderer.setSize( this.vis.innerWidth(), this.vis.innerHeight());
+		//this.updateYAxis(height, width);
 		this.updateBars(height, width);
 		this.render();
 		this.vis.append( this.renderer.domElement );	
 	}
 
 	updateBars(height, width){
-		for (var i = 0; i < this.bars.length; ++i) {
-			this.scene.remove(this.bars[i].bar);
-			this.bars[i].bar.material.dispose();
-			this.bars[i].bar.geometry.dispose();
+		for (let i = 0; i < this.bars.length; ++i) {
+			for (let j = 0; j < this.bars[i].bars.length; ++j){
+				this.scene.remove(this.bars[i].bars[j]);
+				this.bars[i].bars[j].material.dispose();
+				this.bars[i].bars[j].geometry.dispose();
+			}
 			this.bars[i] = undefined;
 		}
 		this.bars = [];
@@ -189,6 +242,10 @@ class BarsVis {
 		this.camera.position.set( this.zoom * Math.sin(this.angleX) * Math.cos(this.angleY) , 
 							 this.zoom * Math.sin(this.angleY), 
 					 		 this.zoom * Math.cos(this.angleX) * Math.cos(this.angleY));
+
+		this.directionalLight.position.set( Math.sin(this.angleX), 0.5, Math.cos(this.angleX) ).normalize();
+
+
 		this.camera.lookAt( lookAt );
 		this.render();
 	}

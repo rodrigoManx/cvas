@@ -3,9 +3,11 @@ var GRID_SIDE_SIZE = 64
 var shiftPressed = false;
 var kernelLayerHidden = undefined;
 var clusterLayerHidden = undefined;
+var hiddenLayer = undefined;
 
 const redScale = d3.scaleSequential( d3.interpolateReds )
-						 	.domain([0, 15])
+						 	.domain([0, 15]);
+
 
 document.onkeydown = function(event) {
 	switch( event.keyCode ) {
@@ -19,11 +21,11 @@ document.onkeyup = function(event) {
 	switch( event.keyCode ) {
 		case 16:
 			shiftPressed = false;
-			kernelLayerHidden.show();
-			clusterLayerHidden.show();
-			index = kernelLayerHidden.find('.index').text();
+			hiddenLayer.removeClass('hidden-element');
+			index = hiddenLayer.find('.index').text();
 			explorations[index].map.bounds = explorations[index].map.map.getBounds();
-			explorations[index].map.builder.buildKernelMapLayers();
+			explorations[index].map.builder.buildKernelMapLayer();
+			explorations[index].map.builder.buildClusters();
 			break;
 	}
 }
@@ -41,15 +43,18 @@ class MapVis {
 		this.vis = this.exploration.vis1;
 		this.map = null;
 		this.mapLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%'});
-		this.gridLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'});
-		this.clusterLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'});
-		this.gridLayer.append('<p class="index">' + explorations.length + '</p>');
+		this.heatmapLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'});
+		this.clusterLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'}).addClass('hidden-element');
+		this.layers = $('<div/>').addClass('map-layers dropzone');
+		this.layers.append('<p class="index">' + this.exploration.id + '</p>');
+		this.layers.append(this.clusterLayer);
+		this.layers.append(this.heatmapLayer);
 		this.vis.append(this.mapLayer);
-		this.vis.append(this.clusterLayer);
-		this.vis.append(this.gridLayer);
+		this.vis.append(this.layers);
 		this.width = 0;
 		this.height = 0;
 		this.kernelMapLayers = {};
+		this.kernelMapLayer = [];
 		this.dataVisualizationMode = VISUALIZATION.CLUSTERS;
 		this.bounds = undefined;
 		this.crimes = undefined;
@@ -61,18 +66,63 @@ class MapVis {
 		this.crimes = this.exploration.crimes;
 		
 		var clusterLayer = this.clusterLayer;
-		this.gridLayer.mouseover(function() {
-			if (kernelLayerHidden != undefined){
-				kernelLayerHidden.show();
-				clusterLayerHidden.show();
+
+		this.layers.append('<div class="dropzone-foreground">\
+							   <p class="dropzone-text A">DRAG HERE</p>\
+							   <p class="dropzone-text B">DROP</p>\
+							</div>');
+
+		this.menu = $('<div class="map-menu"></div>');
+		this.buttons = $('<div class="map-menu-buttons"></div>');
+		this.heatmapButton = $('<div class="map-icon ' + this.exploration.id + '">\
+					                <img src="images/heatmap_icon.png">\
+					                <p>HEATMAP</p>\
+				              	</div>');
+		this.clusteringButton = $('<div class="map-icon ' + this.exploration.id + '">\
+					                <img src="images/clusters_icon.png">\
+					                <p>CLUSTERS</p>\
+				              	</div>');
+		this.buttons.append(this.heatmapButton);
+		this.buttons.append(this.clusteringButton);
+		this.menu.append(this.buttons);
+
+
+		this.clusteringButton.on( "click", function() {
+  			var myClass = $(this).attr("class");
+  			var index = parseInt(myClass.split(' ')[1]);
+  			explorations[index].map.builder.buildClusters();
+  			explorations[index].map.heatmapLayer.addClass('hidden-element');
+  			explorations[index].map.clusterLayer.removeClass('hidden-element');
+		});
+		this.heatmapButton.on( "click", function() {
+			var myClass = $(this).attr("class");
+  			var index = parseInt(myClass.split(' ')[1]);
+  			explorations[index].map.builder.buildKernelMapLayer();
+  			explorations[index].map.heatmapLayer.removeClass('hidden-element');
+  			explorations[index].map.clusterLayer.addClass('hidden-element');
+		});
+
+		this.vis.append(this.menu);
+
+		this.layers.mouseover(function() {
+			if (hiddenLayer != undefined){
+				hiddenLayer.removeClass('hidden-element');
 			}
 			if (shiftPressed) {
-				kernelLayerHidden = $(this);
-				clusterLayerHidden = clusterLayer;
-				clusterLayerHidden.hide();
-				kernelLayerHidden.hide();
+				hiddenLayer = $(this);
+				hiddenLayer.addClass('hidden-element');
 			}
-		})
+		});
+
+		/*this.clusterLayer.mouseover(function() {
+			if (hiddenLayer != undefined){
+				hiddenLayer.removeClass('hidden-element');
+			}
+			if (shiftPressed) {
+				hiddenLayer = $(this);
+				hiddenLayer.addClass('hidden-element');
+			}
+		});*/
 
 		this.setDimProperties();
 		this.builder.buildMap(true);
@@ -117,3 +167,4 @@ class MapVis {
 		}
 	}
 }
+
