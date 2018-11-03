@@ -8,16 +8,9 @@ class Exploration {
 		this.id = id;
 		this.vis0 = exploration.find('.vis1');
 		this.vis1 = exploration.find('.vis0');
-		this.vis2 = exploration.find('.vis2');
 		this.bars = new BarsVis(this.vis0, this);
 		this.map = new MapVis(this);
-		this.time = new TimeVis(this);
 		this.type = EXPLORATION_TYPE.DEFAULT;
-		this.camera = null;
-		this.scene = null;
-		this.renderer = null;
-		this.crimes = crimesByMonth();
-		this.granularity = GRANULARITY.MONTH;
 	}
 
 	getLabels() {
@@ -65,7 +58,6 @@ class Exploration {
 	initLargeExploration() {
 		this.map.init();
 		this.bars.init();
-		this.time.init();
 		this.vis0.bind( 'mousemove', onDocumentMouseMove);
 		this.vis0.bind( 'mousedown', onDocumentMouseDown);
 		this.vis0.bind( 'mouseup', onDocumentMouseUp);
@@ -90,11 +82,11 @@ function onNewExploration(action) {
 	$('canvas').remove();
 	for (var i = 0; i < explorations.length; ++i){
 		try {
-			if (explorations[i].type != 0){
-				if (action>0)
-					explorations[i].map.updateVis();
-				else explorations[i].map.init();
-			}
+			if (action>0)
+				explorations[i].map.updateVis();
+			else explorations[i].map.init();
+			/*if (explorations[i].type != 0){
+			}*/
 		}
 		catch(err) {
 		}
@@ -126,5 +118,6 @@ function onDocumentMouseMove( event ) {
 function onDocumentMouseDown( event ) {
 	var index = parseInt($(this).find('p').text());
 	event.preventDefault();
+	console.log(index);
 	explorations[index].bars.mouseDown();
 }

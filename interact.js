@@ -66,9 +66,9 @@ interact('.dropzone').dropzone({
   },
   ondragleave: function (event) {
     // remove the drop feedback style
-    index = parseInt(event.relatedTarget.classList[1]);
-    key = event.relatedTarget.classList[2].substring(1);
-    subkey = event.relatedTarget.classList[3].substring(1);
+    index = parseInt(event.target.classList[0]);
+    key = event.relatedTarget.classList[1].substring(1);
+    subkey = event.relatedTarget.classList[2].substring(1);
     explorations[index].map.builder.buildKernelMapLayer(key,subkey);
     event.target.classList.remove('drop-target');
     event.relatedTarget.classList.remove('can-drop');

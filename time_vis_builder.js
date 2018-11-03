@@ -1,63 +1,69 @@
 class TimeVisBuilder {
 	constructor(vis){
 		this.time = vis;
+		this.width;
+ 		this.height;
+		this.cellHeight;
+		this.cellWidth;
+		this.redScaleMin;
+		this.redScaleMax;
+	}
+
+	aux() {
+		this.time.timeLineLayer.find('svg').remove();
+		var redScale2 = d3.scaleSequential( d3.interpolateReds )
+					.domain([this.redScaleMin, this.redScaleMax]);
+
+		var keys = Object.keys(timeLineCrimes).sort();
+		var subKeys = Object.keys(timeLineCrimes[keys[0]]).sort();
+
+		var heatMapWidth = 1800;//px 
+		var heatMapHeight = 430;//px
+
+		var svg = d3.select(this.time.timeLineLayer[0])
+					.append("svg")
+					.attr("width", heatMapWidth)
+					.attr("height", heatMapHeight)
+					.attr('z-index', 10);
+
+		for(let i = 0; i < granularity.ROWS; ++i){
+			var g = svg.append("g").attr("class", "row");
+			for(let j = 0; j < granularity.COLS; ++j){
+				var red;
+				try{
+					red = redScale2(timeLineCrimes[keys[i]][subKeys[j]].crimes_count);
+				}
+				catch (err){
+					red = "rgb(255,255,255)";
+				}
+				g.append("rect")
+					.attr("class", "draggable"+/*this.time.exploration.id+*/' k'+keys[i]+' s'+subKeys[j])	
+					.attr('x', j * (heatMapWidth / granularity.COLS))
+					.attr('y', i * (heatMapHeight / granularity.ROWS))
+					.attr('width', (heatMapWidth / granularity.COLS))
+					.attr('height', heatMapHeight / granularity.ROWS)
+					.attr('fill', red);
+			}
+		}
 	}
 
 	buildTimeLine(){
-		var width = this.time.timeLineLayer.innerWidth();
-		var height = this.time.timeLineLayer.innerHeight();
+		this.width = this.time.timeLineLayer.innerWidth();
+ 		this.height = this.time.timeLineLayer.innerHeight();
+		this.cellHeight = (this.height / (granularity.ROWS + 1)) * 0.85;
+		this.cellWidth = (this.width / (granularity.COLS + 1 ));
+		this.redScaleMin = 0; 
+		this.redScaleMax = 0;
+		this.time.slider.get(0).min = timeLineCrimes.min;
+		this.time.slider.get(0).max = timeLineCrimes.max;
 
-		this.time.timeLineLayer.find('table').remove();
+		this.time.slider.change(function(){
+			time.builder.redScaleMin = this.value;
+			time.builder.aux();
+		});
 		
-		var colsNumber = this.time.exploration.granularity.COLS;
-		var cellHeight = (height / (this.time.exploration.granularity.ROWS + 1)) * 0.91;
-		var cellWidth = (width / (this.time.exploration.granularity.COLS + 1 ));
-
-		var keys = Object.keys(this.time.exploration.crimes).sort();
-		var subKeys = Object.keys(this.time.exploration.crimes[keys[0]]).sort();
-
-		var redScale2 = d3.scaleSequential( d3.interpolateReds )
-							.domain([this.time.exploration.crimes.minB, this.time.exploration.crimes.max]);
-
-		var table = $('<table>').addClass('table table-striped table-hover');
-		var rowHeader = $('<tr>').css({'height':cellHeight+'px'});
-		rowHeader.append($('<th>').css({'width':cellWidth+'px'}).text(''));
-		for (let j = 0; j < this.time.exploration.granularity.COLS; ++j){
-			var col = $('<th>').css({'width':cellWidth+'px'}).text(subKeys[j]);
-			rowHeader.append(col);
-		}
-		table.append(rowHeader);
-
-		for(let i = 0; i < this.time.exploration.granularity.ROWS; ++i){
-			var row = $('<tr>').css({'height':cellHeight+'px'});
-			var rowHeader = $('<th>').css({'width':cellWidth+'px'}).text(keys[i]);
-			row.append(rowHeader);
-			for(let j = 0; j < this.time.exploration.granularity.COLS; ++j){
-				var col = $('<td>').css({'width':cellWidth+'px'});
-					var red;
-					try{
-						red = redScale2(this.time.exploration.crimes[keys[i]][subKeys[j]].crimes_count);
-					}
-					catch (err){
-						red = "rgb(255,255,255)";
-					}
-					var cell = d3.select(col.get(0))
-						.append("svg")
-						.attr("width", cellWidth)
-						.attr("height", cellHeight)
-						.attr("class", "draggable "+this.time.exploration.id+' k'+keys[i]+' s'+subKeys[j])
-						.attr('z-index', 10)
-						.append("rect")
-						.attr('x', cellWidth/2 - cellHeight/2)
-						.attr('y', 0)
-						.attr('width', cellHeight)
-						.attr('height', cellHeight)
-						.attr('fill', red);
-				row.append(col);
-			}
-			table.append(row);
-		}
-		this.time.timeLineLayer.append(table);
-
+		this.redScaleMin = timeLineCrimes.min;
+		this.redScaleMax = timeLineCrimes.max;
+		this.aux();
 	}
 }

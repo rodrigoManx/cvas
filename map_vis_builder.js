@@ -9,50 +9,20 @@ class MapVisBuilder {
 		this.currentSubKey;
 	}
 
-	/*buildKernelMapLayers() {
-		this.map.kernelMapLayers = {};
-		var height = this.map.bounds.f.f - this.map.bounds.f.b;
-		var p1 = height / this.map.height;
-
-		var width = this.map.bounds.b.f - this.map.bounds.b.b;
-		var p2 = width / this.map.width;
-
-		for (var key in this.map.crimes){
-			this.map.kernelMapLayers[key] = [];
-			for (let  i = 0; i < this.map.height; ++i){
-				this.map.kernelMapLayers[key][i] = [];
-				for (let j = 0; j < this.map.width; ++j)
-					this.map.kernelMapLayers[key][i][j] = 0;
-			}
-
-			for (let category in this.map.crimes[key]){
-				for (let crime in this.map.crimes[key][category]){
-					let lat = parseFloat(this.map.crimes[key][category][crime].latitude);
-					let lon = parseFloat(this.map.crimes[key][category][crime].longitude);
-					if (lat > this.map.bounds.f.b && lat < this.map.bounds.f.f && lon > this.map.bounds.b.b && lon < this.map.bounds.b.f)
-					{
-						let indexI = Math.floor(( lat - this.map.bounds.f.b) / p1);
-						let indexJ = Math.floor(( lon - this.map.bounds.b.b) / p2);
-						this.map.kernelMapLayers[key][indexI][indexJ]+=1;
-					}
-				}
-			}
-		}
-		this.buildGrid(this.map.vis.innerWidth(), this.map.vis.innerHeight());
-	}*/
 
 	buildKernelMapLayer(key, subKey) {
-		console.log(this.map.exploration.crimes);
-
 		if (key != undefined && subKey != undefined){
 			this.currentKey = key;
 			this.currentSubKey = subKey;
 		}
+		if (this.currentKey == undefined || this.currentSubKey == undefined){
+			return;
+		}
 		this.map.kernelMapLayer = [];
-		var height = this.map.bounds.f.f - this.map.bounds.f.b;
+		var height = this.map.bounds.l.l - this.map.bounds.l.j;
 		var p1 = height / this.map.height;
 
-		var width = this.map.bounds.b.f - this.map.bounds.b.b;
+		var width = this.map.bounds.j.l - this.map.bounds.j.j;
 		var p2 = width / this.map.width;
 
 		for (let  i = 0; i < this.map.height; ++i){
@@ -61,15 +31,14 @@ class MapVisBuilder {
 				this.map.kernelMapLayer[i][j] = {count:0, categories:{}};
 		}
 
-		//return;
-		for (let category in this.map.crimes[this.currentKey][this.currentSubKey].crimes){
-			for (let crime in this.map.crimes[this.currentKey][this.currentSubKey].crimes[category]){
-				let lat = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
-				let lon = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
-				if (lat > this.map.bounds.f.b && lat < this.map.bounds.f.f && lon > this.map.bounds.b.b && lon < this.map.bounds.b.f)
+		for (let category in timeLineCrimes[this.currentKey][this.currentSubKey].crimes){
+			for (let crime in timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category]){
+				let lat = parseFloat(timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
+				let lon = parseFloat(timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
+				if (lat > this.map.bounds.l.j && lat < this.map.bounds.l.l && lon > this.map.bounds.j.j && lon < this.map.bounds.j.l)
 				{
-					let indexI = Math.floor(( lat - this.map.bounds.f.b) / p1);
-					let indexJ = Math.floor(( lon - this.map.bounds.b.b) / p2);
+					let indexI = Math.floor(( lat - this.map.bounds.l.j) / p1);
+					let indexJ = Math.floor(( lon - this.map.bounds.j.j) / p2);
 					this.map.kernelMapLayer[indexI][indexJ].count+=1;
 					if (this.map.kernelMapLayer[indexI][indexJ].categories[category] == undefined)
 						this.map.kernelMapLayer[indexI][indexJ].categories[category] = 1;
@@ -112,6 +81,7 @@ class MapVisBuilder {
 		var map = this.map;
 		google.maps.event.addListener(this.map.map, 'bounds_changed', function() {
 			map.bounds = this.getBounds();
+			map.builder.buildKernelMapLayer();
 			//if (map.dataVisualizationMode == VISUALIZATION.KERNEL_MAP)
 			//	map.builder.buildKernelMapLayers();
 			//else map.builder.buildClusters();
@@ -159,20 +129,20 @@ class MapVisBuilder {
 			this.currentSubKey = subKey;
 		}
 		var data = [];
-		var boundingBoxLeftLatitude = this.map.bounds.f.b;
-		var boundingBoxBotLongitude = this.map.bounds.b.b;
+		var boundingBoxLeftLatitude = this.map.bounds.l.j;
+		var boundingBoxBotLongitude = this.map.bounds.j.j;
 		var visWidth = this.map.vis.innerWidth();		
 		var visHeight = this.map.vis.innerHeight();
 
-		var p1 = (this.map.bounds.f.f - this.map.bounds.f.b) / visHeight;
-		var p2 = (this.map.bounds.b.f - this.map.bounds.b.b) / visWidth;
+		var p1 = (this.map.bounds.l.l - this.map.bounds.l.j) / visHeight;
+		var p2 = (this.map.bounds.j.l - this.map.bounds.j.j) / visWidth;
 
-		for (let category in this.map.crimes[this.currentKey][this.currentSubKey].crimes){
-			for (let crime in this.map.crimes[this.currentKey][this.currentSubKey].crimes[category]){
-				let lat = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
-				let lon = parseFloat(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
-				if (lat > this.map.bounds.f.b && lat < this.map.bounds.f.f && lon > this.map.bounds.b.b && lon < this.map.bounds.b.f)
-					data.push(this.map.crimes[this.currentKey][this.currentSubKey].crimes[category][crime]);
+		for (let category in timeLineCrimes[this.currentKey][this.currentSubKey].crimes){
+			for (let crime in timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category]){
+				let lat = parseFloat(timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category][crime].latitude);
+				let lon = parseFloat(timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category][crime].longitude);
+				if (lat > this.map.bounds.l.j && lat < this.map.bounds.l.l && lon > this.map.bounds.j.j && lon < this.map.bounds.j.l)
+					data.push(timeLineCrimes[this.currentKey][this.currentSubKey].crimes[category][crime]);
 			}
 		}
 

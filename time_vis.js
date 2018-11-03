@@ -1,68 +1,67 @@
 class TimeVis {
-	constructor(exploration){
-		this.exploration = exploration;
-		this.vis = this.exploration.vis2;
-		this.builder = new TimeVisBuilder(this);
+	constructor(){
+		this.vis = $('#time-line');
 		this.timeLineLayer = $('<div/>').addClass('time-line-layer');
-		this.leftPanel = $('<div/>').addClass('tll-left-panel ' + this.exploration.id);
-		this.rightPanel = $('<div/>').addClass('tll-right-panel ' + this.exploration.id);
+		this.leftPanel = $('<div/>').addClass('tll-left-panel');
+		this.rightPanel = $('<div/>').addClass('tll-right-panel');
 		this.leftLabel = $('<div/>').addClass('tll-left-label');
 		this.topLabel = $('<div/>').addClass('tll-top-label');
+		this.sliderContainer = $('<div/>').addClass('slider-container');
+		this.slider = $('<input type="range" min="1" max="100" value="50" class="slider" id="myRange">');
 		this.vis.append(this.timeLineLayer);
 		this.vis.append(this.rightPanel);
 		this.vis.append(this.leftPanel);
 		this.vis.append(this.leftLabel);
 		this.vis.append(this.topLabel);
+		this.vis.append(this.sliderContainer);
+		this.builder = new TimeVisBuilder(this);
 	}
 
 	init() {
+
+
+		this.sliderContainer.append(this.slider);
 		this.leftLabel.append('<p>MONTHS</p>');
 		this.topLabel.append('<p>DAYS</p>');
 
 		this.builder.buildTimeLine();
 		this.leftPanel.on('click', function(){
 			var myClass = $(this).attr("class");
-			var index = parseInt(myClass.split(' ')[1]);
-			explorations[index].time.rightPanel.removeClass("hidden-element");
-			if (explorations[index].granularity == GRANULARITY.MONTH){
-				explorations[index].crimes = crimesByYear();
-				explorations[index].map.crimes = explorations[index].crimes;
-				explorations[index].granularity = GRANULARITY.YEAR;
-				explorations[index].time.leftPanel.addClass("hidden-element");
-				explorations[index].time.leftLabel.find('p').text('YEARS');
-				explorations[index].time.topLabel.find('p').text('MONTHS');
+			time.rightPanel.removeClass("hidden-element");
+			if (granularity == GRANULARITY.MONTH){
+				timeLineCrimes = crimesByYear();
+				granularity = GRANULARITY.YEAR;
+				time.leftPanel.addClass("hidden-element");
+				time.leftLabel.find('p').text('YEARS');
+				time.topLabel.find('p').text('MONTHS');
 			}
-			else if (explorations[index].granularity == GRANULARITY.DAY){
-				explorations[index].crimes = crimesByMonth();
-				explorations[index].map.crimes = explorations[index].crimes;
-				explorations[index].granularity = GRANULARITY.MONTH;
-				explorations[index].time.leftLabel.find('p').text('MONTHS');
-				explorations[index].time.topLabel.find('p').text('DAYS');
+			else if (granularity == GRANULARITY.DAY){
+				timeLineCrimes = crimesByMonth();
+				granularity = GRANULARITY.MONTH;
+				time.leftLabel.find('p').text('MONTHS');
+				time.topLabel.find('p').text('DAYS');
 			}
 
-			explorations[index].time.builder.buildTimeLine();
+			time.builder.buildTimeLine();
 		});
 		this.rightPanel.on('click', function(){
 			var myClass = $(this).attr("class");
-			var index = parseInt(myClass.split(' ')[1]);
-			explorations[index].time.leftPanel.removeClass("hidden-element");
-			if (explorations[index].granularity == GRANULARITY.MONTH){
-				explorations[index].crimes = crimesByDay();
-				explorations[index].map.crimes = explorations[index].crimes;
-				explorations[index].granularity = GRANULARITY.DAY;
-				explorations[index].time.rightPanel.addClass("hidden-element");
-				explorations[index].time.leftLabel.find('p').text('DAYS');	
-				explorations[index].time.topLabel.find('p').text('HOURS');
+			time.leftPanel.removeClass("hidden-element");
+			if (granularity == GRANULARITY.MONTH){
+				timeLineCrimes = crimesByDay();
+				granularity = GRANULARITY.DAY;
+				time.rightPanel.addClass("hidden-element");
+				time.leftLabel.find('p').text('DAYS');	
+				time.topLabel.find('p').text('HOURS');
 			}
-			else if (explorations[index].granularity == GRANULARITY.YEAR){
-				explorations[index].crimes = crimesByMonth();
-				explorations[index].map.crimes = explorations[index].crimes;
-				explorations[index].granularity = GRANULARITY.MONTH;	
-				explorations[index].time.leftLabel.find('p').text('MONTHS');	
-				explorations[index].time.topLabel.find('p').text('DAYS');
+			else if (granularity == GRANULARITY.YEAR){
+				timeLineCrimes = crimesByMonth();
+				granularity = GRANULARITY.MONTH;	
+				time.leftLabel.find('p').text('MONTHS');	
+				time.topLabel.find('p').text('DAYS');
 			}
 
-			explorations[index].time.builder.buildTimeLine();
+			time.builder.buildTimeLine();
 		});
 	}
 }

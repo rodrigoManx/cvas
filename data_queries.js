@@ -37,21 +37,21 @@ function crimesByMonth() {
 	dict.min = 50000;
 	dict.max = 0;
 	dict.minB = 50000;
-	for (var year in crimes) {
-		for (var month in crimes[year]){
+	for (let year in crimes) {
+		for (let month in crimes[year]){
 			if (dict[month] == undefined) dict[month] = {};
-			for (var day in crimes[year][month]){
+			for (let day in crimes[year][month]){
 				if (dict[month][day] == undefined) {
 					dict[month][day] = {};
 					dict[month][day].crimes_count = 0;
 					dict[month][day].crimes = {};
 				}
-				for (var hour in crimes[year][month][day]){
-					for (var category in crimes[year][month][day][hour]){
+				for (let hour in crimes[year][month][day]){
+					for (let category in crimes[year][month][day][hour]){
 						dict[month][day].crimes_count += crimes[year][month][day][hour][category].length
-						if (dict[month][day].crimes[category] === undefined)
+						if (dict[month][day].crimes[category] == undefined)
 							dict[month][day].crimes[category] = [];
-						for (crime in crimes[year][month][day][hour][category])
+						for (let crime in crimes[year][month][day][hour][category])
 							dict[month][day].crimes[category].push(crimes[year][month][day][hour][category][crime]);
 					}
 				}

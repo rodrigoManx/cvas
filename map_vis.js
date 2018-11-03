@@ -45,7 +45,7 @@ class MapVis {
 		this.mapLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%'});
 		this.heatmapLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'});
 		this.clusterLayer = $('<div/>').css({'position': 'absolute', 'height': '100%', 'width': '100%', 'z-index': '4', 'background-color': 'rgba(255,255,255,0)'}).addClass('hidden-element');
-		this.layers = $('<div/>').addClass('map-layers dropzone');
+		this.layers = $('<div/>').addClass(this.exploration.id + ' map-layers dropzone');
 		this.layers.append('<p class="index">' + this.exploration.id + '</p>');
 		this.layers.append(this.clusterLayer);
 		this.layers.append(this.heatmapLayer);
@@ -136,7 +136,7 @@ class MapVis {
 
 	setDimProperties() {
 		var smallSide, bigSide, sss;
-
+		//console.log(this.exploration.bars.categoryColors.innerHeight());
 		if (this.vis.innerHeight() < this.vis.innerWidth()){
 			smallSide = this.vis.innerHeight();
 			bigSide = this.vis.innerWidth();

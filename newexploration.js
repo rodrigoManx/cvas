@@ -1,18 +1,20 @@
 var explorationsCount = 0;
 var explorations = [];
-const VIS_NUMBER = 3;
+const VIS_NUMBER = 2;
 explorationMenuOptions = ['>Large exploration', '>Especific exploration', 'disabled> Select data set'];
 var crimes;
 var explorationLevel = {year: 5, month: 12, day: 31}
 
 var crimeCategories = ["OTHER OFFENSES", "VANDALISM", "LARCENY/THEFT", "DRUG/NARCOTIC", "ASSAULT", "BURGLARY", "NON-CRIMINAL", "SUSPICIOUS OCC", "LIQUOR LAWS", "WARRANTS", "EMBEZZLEMENT", "FORGERY/COUNTERFEITING", "VEHICLE THEFT", "ROBBERY", "MISSING PERSON", "DRUNKENNESS", "FAMILY OFFENSES", "DISORDERLY CONDUCT", "TRESPASS", "SECONDARY CODES", "WEAPON LAWS", "SEX OFFENSES, FORCIBLE", "STOLEN PROPERTY", "FRAUD", "PROSTITUTION", "LOITERING", "DRIVING UNDER THE INFLUENCE", "RUNAWAY", "KIDNAPPING", "RECOVERED VEHICLE", "ARSON", "EXTORTION", "BAD CHECKS", "BRIBERY", "SUICIDE", "PORNOGRAPHY/OBSCENE MAT", "SEX OFFENSES, NON FORCIBLE", "GAMBLING", "TREA", "OTHERS"];
 var categoryColors = {};
-
+var time = undefined;
+var granularity = GRANULARITY.MONTH;
+var timeLineCrimes = undefined;
 
 $( document ).ready(function() {
 	$.getJSON("backend/sf_crimes.json", function(result){
+		time = new TimeVis();
         crimes = result;
-        console.log(crimes);
         explorationLevel.year = Object.keys(crimes).length;
         GRANULARITY.YEAR.ROWS = Object.keys(crimes).length;
 
@@ -25,7 +27,8 @@ $( document ).ready(function() {
         	categoryColors[crimeCategories[i]] = colors(crimeCategories[i]);
 
         $('.loading-modal').css({'display': 'none'});
-
+    	timeLineCrimes = crimesByMonth();
+    	time.init();
 		addNewExploration();
 	});
 });
@@ -60,34 +63,12 @@ function createExploration(exploration) {
 
 
 function modifyVisCss() {
-	if (explorationsCount == 1 || explorationsCount == 2){
-		$('.vis0').css({'width': '50%', 'height':'50%'}); 
-		$('.vis1').css({'width': '50%', 'height':'50%'}); 
-		$('.vis2').css({'width': '100%', 'height': '50%'});
-	}
-	else
-		$('.vis').css({'width': '100%', 'height':'25%'}); 	
-}
-
-
-function modifyExplorationMenu() {
-	if (explorationsCount == 1)
-		$('.exploration-menu').css({'width': '24%', 'margin-left':'-12%'}); 	
-	else if (explorationsCount == 2)
-		$('.exploration-menu').css({'width': '48%', 'margin-left':'-24%'});
-	else
-		$('.exploration-menu').css({'width': '70%', 'margin-left':'-35%'}); 	
+	$('.vis').css({'width': '50%', 'height': '100%'});
 }
 
 
 function modifyExplorationCss() {
-	if (explorationsCount == 0) {
-		$('.exploration').css({'width': '99.6%'});
-	}
-	else {
-		$('.exploration').css({'width': (99.6 * (1 / (explorationsCount))).toString() + '%'}); 
-	}
-	modifyExplorationMenu();
+	$('.exploration').css({'width': 99.6/explorationsCount + '%'})
 }
 
 
