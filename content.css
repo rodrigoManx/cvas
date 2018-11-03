@@ -17,7 +17,17 @@
 	position: absolute;
 	left: 0px;
 	top: 0px;
-	height: 100%;
+	height: 50%;
+	width: 100%;
+	background: white;
+	z-index: 0;
+}
+
+#time-line {
+	position: absolute;
+	left: 0px;
+	top: 50%;
+	height: 50%;
 	width: 100%;
 	background: white;
 	z-index: 0;
@@ -97,4 +107,342 @@
 
 .index {
 	display: none;
+}
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    /*border: 1px solid black;*/
+    padding: 0px;
+    /*border-right: 1px solid black; */
+}
+#drag-1, #drag-2 {
+    width: 25%;
+    height: 100%;
+    min-height: 6.5em;
+    margin: 10%;
+    background-color: #29e;
+    color: white;
+    border-radius: 0.75em;
+    padding: 4%;
+    -webkit-transform: translate(0px, 0px);
+    transform: translate(0px, 0px);
+}
+
+
+
+#drag-1, #drag-2 {
+  width: 25%;
+  height: 100%;
+  min-height: 6.5em;
+  margin: 10%;
+
+  background-color: #29e;
+  color: white;
+
+  border-radius: 0.75em;
+  padding: 4%;
+
+  -webkit-transform: translate(0px, 0px);
+          transform: translate(0px, 0px);
+}
+
+#drag-me::before {
+  content: "#" attr(id);
+  font-weight: bold;
+}
+
+#outer-dropzone {
+  height: 140px;
+}
+
+#inner-dropzone {
+  height: 80px;
+}
+
+.dropzone-text {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 300px;
+	height: 100px;
+	margin-top: -50px;
+	margin-left: -150px;
+	color: white;
+	font-size: 50px;
+	text-align: center;
+}
+
+.dropzone-foreground {
+	position:absolute;
+	width:100%;
+	height:100%;
+	background-color:#2299EE;
+	z-index:15;
+}
+
+.dropzone .dropzone-foreground{
+  	display: none;
+}
+
+.drop-active .dropzone-foreground{
+  	display: block;
+}
+
+.drop-target .dropzone-foreground{
+  	background-color: #44EE44 !important;
+}
+
+.drop-target .A{
+  	display: none;
+}
+
+.drop-target .B{
+  	display: block;
+}
+
+.B{
+	display: none;	
+}
+
+.A{
+	display: block;
+}
+
+.drag-drop {
+	display: inline-block;
+	min-width: 40px;
+	padding: 2em 0.5em;
+
+	color: #fff;
+	background-color: #29e;
+	border: solid 2px #fff;
+
+	-webkit-transform: translate(0px, 0px);
+	      transform: translate(0px, 0px);
+
+	transition: background-color 0.3s;
+}
+
+.map-menu {
+	position: absolute;
+	height: 100%;
+	width: 10%;
+	z-index: 9;
+	background-color: rgba(0,0,0,0);	
+}
+
+.map-icon img {
+	border-radius: 50%;
+	height: 50px;
+	width: 50px;
+	vertical-align:middle;
+	border:1px solid #021a40 !important
+}
+
+.map-menu-buttons {
+	position: absolute;
+	top: 67%;
+	left: 10px;
+}
+
+.map-icon {
+	width: 200px;
+}
+
+.map-icon:hover img {
+	height: 75px;
+	width: 75px;
+	border-width: 2px;   
+}
+
+.map-icon:hover p {
+	display: inline;
+}
+
+.map-icon p {
+	display: none;
+	font-weight: bold;
+	color: white;
+	text-shadow:
+	-1px -1px 0 #000,  
+	1px -1px 0 #000,
+	-1px 1px 0 #000,
+	 1px 1px 0 #000;
+}
+
+.hidden-element {
+	display: none;
+}
+
+.map-layers {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	z-index: 4;
+	background-color: rgba(255,255,255,0);
+}
+
+.time-line-layer {
+	position: absolute;
+	height: 93%;
+	width: 93%;
+	top: 7%;
+	left: 4%;
+	right: 2%;
+	z-index: 100;
+}
+
+.tll-left-panel {
+	position: absolute;
+	height: 100%;
+	width: 2%;
+	left: 0px;
+	z-index: 100;
+	background-image: url('images/left_arrow.png');
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: 20px 20px; /* Resize the background image to cover the entire container */
+}
+
+.tll-right-panel {
+	position: absolute;
+	height: 100%;
+	width: 2%;
+	left: 98%;
+	z-index: 100;
+	background-image: url('images/right_arrow.png');
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: 20px 20px; /* Resize the background image to cover the entire container */
+}
+
+.tll-right-panel:hover, .tll-left-panel:hover {
+	background-color: rgba(0,255,0,0.5);
+}
+
+.tll-left-label {
+	position: absolute;
+	height: 93%;
+	top: 7%;
+	width: 2.5%;
+	left: 2%;
+	z-index: 100;
+	text-align: center;
+}
+
+.tll-left-label p {
+	top:45%;
+	position: absolute;
+	writing-mode: vertical-rl;
+}
+
+.tll-top-label {
+	position: absolute;
+	height: 7%;
+	top: 0%;
+	width: 93%;
+	left: 5%;
+	z-index: 100;
+	text-align: center;
+}
+
+
+.slider-container {
+	position: absolute;
+	height: 7%;
+	top: 0%;
+	width: 40%;
+	left: 5%;
+	z-index: 100;
+	text-align: center;	
+}
+
+
+.crimes-colors-panel {
+	display: block;
+	position: absolute;
+	height: 95%;
+	margin: 1.5% 1%;
+	z-index: 100;
+}
+
+
+.category-colors-list-item {
+	position: relative;
+	background-color: white;
+	display: block;
+}
+
+
+.category-colors-list-item:hover {
+	width: 200% !important;
+	height: 5% !important;
+	z-index: 101;
+}
+
+.category-colors-list-item:hover div{
+	font-size: 20px !important;
+}
+
+.highlighted-item {
+	background-color: #D5D3D4 !important;
+}
+
+.first-place {
+	background-color: #F7CA55 !important;
+	/*background-image: url('images/oro.png') !important;
+	background-size: cover !important;*/
+}
+
+.second-place {
+	background-color: #CDCBCC !important;
+	/*background-image: url('images/plata.png') !important;
+	background-size: cover !important;*/
+}
+
+.third-place {
+	background-color: #CC6B38 !important;
+	/*background-image: url('images/bronce.png');
+	background-size: cover;*/
+}
+
+.trophy-place {
+	background-color: #F7CA55 !important;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin-top: 2.5%;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #F04734;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #F04734;
+    cursor: pointer;
 }
